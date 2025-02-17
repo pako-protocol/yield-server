@@ -22,6 +22,7 @@ app.use("/api/v1", siloRoutes)
 app.use("/api/v1/tokens", tokenRoutes)
 app.use("/api/v1/pools", poolsRoutes)
 app.use("/api/v1/markets", marketsRoutes)
+app.use("/api/v1/cron", cronOnchainUpdates)
 
 
   // Schedule the cron job to run every 15 minutes
