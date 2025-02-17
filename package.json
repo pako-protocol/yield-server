@@ -4,7 +4,7 @@
   "main": "src/server.ts",
   "scripts": {
  "build": "npx prisma generate && npx tsc",
-    "start": "node dist/server.js",
+    "start": "node dist/api/server.js",
     "dev": "nodemon src/server.ts",
     "generate": "prisma generate",
     "migrate": "prisma migrate deploy",
