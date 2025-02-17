@@ -1,0 +1,36 @@
+{
+  "name": "yield-server-2",
+  "version": "1.0.0",
+  "main": "src/server.ts",
+  "scripts": {
+    "build": "npx tsc",
+    "start": "node dist/index.js",
+    "dev": "nodemon src/server.ts",
+    "generate": "prisma generate",
+    "migrate": "prisma migrate deploy",
+    "push": "prisma db push"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.13.1",
+    "@types/node-cron": "^3.0.11",
+    "concurrently": "^9.1.2",
+    "ethers": "^5.4.0",
+    "nodemon": "^3.1.9",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.3"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.3.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "express-async-handler": "^1.2.0",
+    "node-cron": "^3.0.3"
+  }
+}
