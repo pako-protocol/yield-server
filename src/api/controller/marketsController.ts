@@ -91,7 +91,7 @@ export const getMarkets = expressAsyncHandler(async (req, res) => {
     const items = await prisma.market.findMany({
       where: filters,
       include : {
-        baseSilo : {
+      baseSilo : {
 select : {
   name : true,
   siloAddress : true,
@@ -99,9 +99,17 @@ select : {
   aprBorrow : true,
   availableToBorrow : true,
   utilization : true,
-  tvl : true
+  tvl : true,
+  token : {
+    select : {
+      name : true,
+      logo : true,
+      symbol : true,
+      tokenAddress : true
+    }
+  }
 }
-        },
+},
         bridgeSilo : {
           select : {
             name : true,
@@ -110,9 +118,17 @@ select : {
             aprBorrow : true,
             availableToBorrow : true,
             utilization : true,
-            tvl : true
+            tvl : true,
+            token : {
+              select : {
+                name : true,
+                logo : true,
+                symbol : true,
+                tokenAddress : true
+              }
+            }
           }
-                  },
+          },
         platform : {
           select : {
             name : true

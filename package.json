@@ -6,8 +6,8 @@
     "postinstall": "npx prisma generate",
  "build": "npx prisma generate && tsc",
     "start": "node dist/api/server.js",
-    "dev": "nodemon src/server.ts",
-    "generate": "prisma generate",
+    "dev": "nodemon src/api/index.ts",
+    "generate": "npx prisma generate",
     "migrate": "prisma migrate deploy",
     "push": "prisma db push"
   },

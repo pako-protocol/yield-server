@@ -90,7 +90,15 @@ exports.getMarkets = (0, express_async_handler_1.default)((req, res) => __awaite
                         aprBorrow: true,
                         availableToBorrow: true,
                         utilization: true,
-                        tvl: true
+                        tvl: true,
+                        token: {
+                            select: {
+                                name: true,
+                                logo: true,
+                                symbol: true,
+                                tokenAddress: true
+                            }
+                        }
                     }
                 },
                 bridgeSilo: {
@@ -101,7 +109,15 @@ exports.getMarkets = (0, express_async_handler_1.default)((req, res) => __awaite
                         aprBorrow: true,
                         availableToBorrow: true,
                         utilization: true,
-                        tvl: true
+                        tvl: true,
+                        token: {
+                            select: {
+                                name: true,
+                                logo: true,
+                                symbol: true,
+                                tokenAddress: true
+                            }
+                        }
                     }
                 },
                 platform: {

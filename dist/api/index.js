@@ -9,6 +9,7 @@ const vaults_1 = __importDefault(require("./routes/vaults"));
 const tokensRoute_1 = __importDefault(require("./routes/tokensRoute"));
 const poolsRotes_1 = __importDefault(require("./routes/poolsRotes"));
 const marketsRoute_1 = __importDefault(require("./routes/marketsRoute"));
+const vaults_2 = __importDefault(require("./routes/vaults"));
 const cors_1 = __importDefault(require("cors"));
 const node_cron_1 = __importDefault(require("node-cron"));
 const cron_controller_1 = require("./controller/cron-controller");
@@ -24,6 +25,7 @@ app.use("/api/v1", vaults_1.default);
 app.use("/api/v1/tokens", tokensRoute_1.default);
 app.use("/api/v1/pools", poolsRotes_1.default);
 app.use("/api/v1/markets", marketsRoute_1.default);
+app.use("/api/v1/vaults", vaults_2.default);
 app.use("/api/v1/cron", cron_controller_1.cronOnchainUpdates);
 // Schedule the cron job to run every 15 minutes
 node_cron_1.default.schedule('*/15 * * * *', () => {

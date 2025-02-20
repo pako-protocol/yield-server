@@ -12,15 +12,54 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getSilos = void 0;
+exports.getVaults = void 0;
 //import expressAsyncHandler from "express-async-handler"
 const express_async_handler_1 = __importDefault(require("express-async-handler"));
 const prisma_client_1 = __importDefault(require("../prisma-client"));
-exports.getSilos = (0, express_async_handler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { kalamu, mchuzi, kima } = req.query;
+const formatNameQuery_1 = require("../lib/formatNameQuery");
+exports.getVaults = (0, express_async_handler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const query = req.query;
+    const filters = {};
+    // Market Filtering
+    if (query.vaultName) {
+        filters.name = query.vaultName;
+    }
+    // Filter by platform name
+    if (query.platformName) {
+        const formattedPlatformName = (0, formatNameQuery_1.formatPlatformName)(query.platformName);
+        filters.platform = { name: { contains: formattedPlatformName, mode: 'insensitive' } };
+    }
+    if (query.token0Symbol || query.token1Symbol) {
+        filters.token0 = { symbol: { contains: query.token0Symbol, mode: "insensitive" } };
+    }
     try {
-        const markets = yield prisma_client_1.default.market.findMany();
-        res.status(200).json(markets);
+        const items = yield prisma_client_1.default.vault.findMany({
+            where: filters,
+            include: {
+                platform: {
+                    select: {
+                        name: true
+                    }
+                },
+                token0: {
+                    select: {
+                        name: true,
+                        symbol: true,
+                        logo: true
+                    }
+                },
+                token1: {
+                    select: {
+                        name: true,
+                        symbol: true,
+                        logo: true,
+                    }
+                },
+            }
+        });
+        res.status(200).json({
+            data: { items }
+        });
     }
     catch (error) {
         res.status(400).json(error);

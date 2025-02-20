@@ -60,6 +60,7 @@ model Platform {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   markets   Market[]
+  vaults     Vault[]
 }
 
 model Token {
@@ -69,7 +70,41 @@ model Token {
   logo         String
   tokenAddress String
   silos        Silo[]
+  vaultToken0 Vault[] @relation("VaultToken0")
+  vaultToken1 Vault[] @relation("VaultToken1")
 }
+
+model Vault {
+  id               String   @id @default(uuid())
+  name             String
+  vaultAddress     String   @unique
+  vaultType        VaultType @default(CONCENTRATED)
+  token0Id         String
+  token1Id         String
+  isToken0Allowed  Boolean
+  isToken1Allowed  Boolean
+  gauge            String
+  platformId       String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  token0           Token    @relation("VaultToken0", fields: [token0Id], references: [id])
+  token1           Token    @relation("VaultToken1", fields: [token1Id], references: [id])
+  platform         Platform @relation(fields: [platformId], references: [id])
+
+  // Indexes
+  @@index([name])
+  @@index([token0Id])
+  @@index([token1Id])
+  @@index([platformId])
+}
+
+
+enum VaultType {
+  CONCENTRATED
+  STABLE
+  VOLATILE
+}
+
 
 model actions {
   id             String        @id
