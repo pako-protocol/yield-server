@@ -28,18 +28,18 @@ export const getVaults = asyncHandler ( async (req, res) =>  {
 
     // Market Filtering
   if (query.vaultName) {
-   filters.name = query.vaultName;
+   filters.name = { contains: query.vaultName, mode: 'insensitive' }
  }
-
        // Filter by platform name
     if (query.platformName) {
       const formattedPlatformName = formatPlatformName(query.platformName);
       filters.platform = { name: { contains: formattedPlatformName, mode: 'insensitive' } };
     }
 
-    if (query.token0Symbol || query.token1Symbol) {
-    filters.token0 = {symbol : {contains : query.token0Symbol, mode : "insensitive"}}
+    if (query.token0Symbol) {
+      filters.token0 = { symbol: query.token0Symbol };
     }
+    
  try {
     const items = await prisma.vault.findMany({
       where : filters,
@@ -53,7 +53,8 @@ export const getVaults = asyncHandler ( async (req, res) =>  {
             select : {
                name : true,
                symbol : true,
-               logo : true
+               logo : true,
+               tokenAddress : true
             }
          },
          token1 : {
@@ -61,6 +62,7 @@ export const getVaults = asyncHandler ( async (req, res) =>  {
                name : true,
                symbol : true,
                logo : true,
+               tokenAddress : true
             }
          },
       }
