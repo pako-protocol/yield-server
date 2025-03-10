@@ -18,7 +18,7 @@ const port = process.env.PORT || 5000;
 // ✅ Enable CORS for all routes
 app.use(cors())
 app.get("/", (req: Request, res: Response) => {
-  res.status(200).send("Hello world kabuguuuu");
+  res.status(200).send("Sonic Defi APR/YIELS AND PROTOCOLS DATA AGGREGATOR");
 });
 
 app.use("/api/v1", siloRoutes)
