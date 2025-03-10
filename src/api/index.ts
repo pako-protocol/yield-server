@@ -5,6 +5,8 @@ import tokenRoutes from './routes/tokensRoute'
 import poolsRoutes from './routes/poolsRotes'
 import marketsRoutes from './routes/marketsRoute'
 import vaultsRoutes from './routes/vaults'
+import testRoutes from './routes/testRote'
+
 import cors from "cors";
 import cron from "node-cron"
 import { cronOnchainUpdates } from "./controller/cron-controller";
@@ -25,6 +27,8 @@ app.use("/api/v1/pools", poolsRoutes)
 app.use("/api/v1/markets", marketsRoutes)
 app.use("/api/v1/vaults", vaultsRoutes)
 app.use("/api/v1/cron", cronOnchainUpdates)
+app.use("/api/v1/test", testRoutes)
+
 
 
   // Schedule the cron job to run every 15 minutes

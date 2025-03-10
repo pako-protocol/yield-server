@@ -8,8 +8,8 @@
     "start": "node dist/api/server.js",
     "dev": "nodemon src/api/index.ts",
     "generate": "npx prisma generate",
-    "migrate": "prisma migrate deploy",
-    "push": "prisma db push"
+    "migrate": "npx prisma migrate deploy",
+    "push": "npx prisma db push"
   },
   "keywords": [],
   "author": "",

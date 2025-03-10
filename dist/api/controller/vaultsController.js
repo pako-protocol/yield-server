@@ -22,15 +22,15 @@ exports.getVaults = (0, express_async_handler_1.default)((req, res) => __awaiter
     const filters = {};
     // Market Filtering
     if (query.vaultName) {
-        filters.name = query.vaultName;
+        filters.name = { contains: query.vaultName, mode: 'insensitive' };
     }
     // Filter by platform name
     if (query.platformName) {
         const formattedPlatformName = (0, formatNameQuery_1.formatPlatformName)(query.platformName);
         filters.platform = { name: { contains: formattedPlatformName, mode: 'insensitive' } };
     }
-    if (query.token0Symbol || query.token1Symbol) {
-        filters.token0 = { symbol: { contains: query.token0Symbol, mode: "insensitive" } };
+    if (query.token0Symbol) {
+        filters.token0 = { symbol: query.token0Symbol };
     }
     try {
         const items = yield prisma_client_1.default.vault.findMany({
@@ -45,7 +45,8 @@ exports.getVaults = (0, express_async_handler_1.default)((req, res) => __awaiter
                     select: {
                         name: true,
                         symbol: true,
-                        logo: true
+                        logo: true,
+                        tokenAddress: true
                     }
                 },
                 token1: {
@@ -53,6 +54,7 @@ exports.getVaults = (0, express_async_handler_1.default)((req, res) => __awaiter
                         name: true,
                         symbol: true,
                         logo: true,
+                        tokenAddress: true
                     }
                 },
             }

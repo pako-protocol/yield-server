@@ -24,7 +24,7 @@ export const cronOnchainUpdates = async () => {
         const depositAPR = await siloLens.getDepositAPR(silo.siloAddress);
         const maxLtv = await siloLens.getMaxLtv(silo.siloAddress);
         const getLoanThreshold = await siloLens.getLt(silo.siloAddress);
-
+        const getAvailableToborrow = await siloLens.getRawLiquidity(silo.siloAddress)
 
             // Format values
             const borrowAPRPercentage =
@@ -35,7 +35,8 @@ export const cronOnchainUpdates = async () => {
             parseFloat(ethers.utils.formatUnits(maxLtv, 18)) * 100;
             const loanThreshouldPercentage =
             parseFloat(ethers.utils.formatUnits(getLoanThreshold, 18)) * 100;
-    
+            const availableToBorrow =
+            parseFloat(ethers.utils.formatUnits(getAvailableToborrow, 18));
             // FIXED VALUES
             const borrowDecimal = parseFloat(borrowAPRPercentage.toFixed(2));
             const depositDecimal = parseFloat(depositAPRPercentage.toFixed(2));
@@ -53,6 +54,7 @@ export const cronOnchainUpdates = async () => {
               aprDeposit: depositDecimal,
               liquidationThreshold: loanThreshouldPercentage,
               ltv: maxLtvPercentage,
+              availableToBorrow : availableToBorrow
             },
           })
         );

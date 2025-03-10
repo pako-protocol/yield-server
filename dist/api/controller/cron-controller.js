@@ -32,11 +32,13 @@ const cronOnchainUpdates = () => __awaiter(void 0, void 0, void 0, function* () 
                 const depositAPR = yield siloLens.getDepositAPR(silo.siloAddress);
                 const maxLtv = yield siloLens.getMaxLtv(silo.siloAddress);
                 const getLoanThreshold = yield siloLens.getLt(silo.siloAddress);
+                const getAvailableToborrow = yield siloLens.getRawLiquidity(silo.siloAddress);
                 // Format values
                 const borrowAPRPercentage = parseFloat(ethers_1.ethers.utils.formatUnits(borrowAPR, 18)) * 100;
                 const depositAPRPercentage = parseFloat(ethers_1.ethers.utils.formatUnits(depositAPR, 18)) * 100;
                 const maxLtvPercentage = parseFloat(ethers_1.ethers.utils.formatUnits(maxLtv, 18)) * 100;
                 const loanThreshouldPercentage = parseFloat(ethers_1.ethers.utils.formatUnits(getLoanThreshold, 18)) * 100;
+                const availableToBorrow = parseFloat(ethers_1.ethers.utils.formatUnits(getAvailableToborrow, 18));
                 // FIXED VALUES
                 const borrowDecimal = parseFloat(borrowAPRPercentage.toFixed(2));
                 const depositDecimal = parseFloat(depositAPRPercentage.toFixed(2));
@@ -49,6 +51,7 @@ const cronOnchainUpdates = () => __awaiter(void 0, void 0, void 0, function* () 
                         aprDeposit: depositDecimal,
                         liquidationThreshold: loanThreshouldPercentage,
                         ltv: maxLtvPercentage,
+                        availableToBorrow: availableToBorrow
                     },
                 }));
             }
