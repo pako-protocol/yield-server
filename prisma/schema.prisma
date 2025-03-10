@@ -23,7 +23,6 @@ model Market {
   baseSilo     Silo     @relation("BaseSilo", fields: [baseSiloId], references: [id])
   bridgeSilo   Silo     @relation("BridgeSilo", fields: [bridgeSiloId], references: [id])
   platform     Platform @relation(fields: [platformId], references: [id])
-
   @@index([platformId])
   @@index([baseSiloId])
   @@index([bridgeSiloId])
@@ -49,8 +48,33 @@ model Silo {
   marketBase           Market?   @relation("BaseSilo")
   marketBridge         Market?   @relation("BridgeSilo")
   token                Token     @relation(fields: [tokenId], references: [id])
-
+  rewardMultipliers RewardMultiplier[]
+  siloRewards        SiloRewardConfig?
   @@index([tokenId])
+}
+
+model SiloRewardConfig {
+  id                     String  @id @default(uuid())
+  siloId                 String  @unique
+  xpPerDollarDeposit     Float   @default(1.0) // XP per $1 deposit
+  xpPerDollarBorrow      Float   @default(0.5) // XP per $1 borrowed
+  sTokenRewardAPR  Float?            @default(0.0)
+  siloRewardAPR   Float?       @default(0.0)
+  sonicXpMultiplier       Float?  // e.g., 10x Sonic Points
+  sonicXpMultiplierAction  MultiplierAction? @default(DEPOSIT)
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+  silo                   Silo   @relation(fields: [siloId], references: [id])
+}
+
+model RewardMultiplier {
+  id         String  @id @default(uuid())
+  siloId     String? // Still keep a link to silo if needed
+  action     String  // "DEPOSIT" or "BORROW"
+  tokenSymbol String  
+  multiplier Float   // e.g., 2.0, 3.0
+  silo       Silo?   @relation(fields: [siloId], references: [id])
+  @@index([siloId])
 }
 
 model Platform {
@@ -60,6 +84,7 @@ model Platform {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   markets   Market[]
+  vaults     Vault[]
 }
 
 model Token {
@@ -69,7 +94,42 @@ model Token {
   logo         String
   tokenAddress String
   silos        Silo[]
+  vaultToken0 Vault[] @relation("VaultToken0")
+  vaultToken1 Vault[] @relation("VaultToken1")
+  
 }
+
+model Vault {
+  id               String   @id @default(uuid())
+  name             String
+  vaultAddress     String   @unique
+  vaultType        VaultType @default(CONCENTRATED)
+  token0Id         String
+  token1Id         String
+  isToken0Allowed  Boolean
+  isToken1Allowed  Boolean
+  gauge            String
+  platformId       String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  token0           Token    @relation("VaultToken0", fields: [token0Id], references: [id])
+  token1           Token    @relation("VaultToken1", fields: [token1Id], references: [id])
+  platform         Platform @relation(fields: [platformId], references: [id])
+
+  // Indexes
+  @@index([name])
+  @@index([token0Id])
+  @@index([token1Id])
+  @@index([platformId])
+}
+
+
+enum VaultType {
+  CONCENTRATED
+  STABLE
+  VOLATILE
+}
+
 
 model actions {
   id             String        @id
@@ -208,6 +268,20 @@ model wallets {
   @@unique([ownerId, publicKey])
 }
 
+model AccessCode {
+  id       String  @id @default(cuid())
+  name      String
+  code  String @unique
+  isValid    Boolean
+  createdAt  DateTime @default(now())
+  expireAt DateTime
+}
+
+enum MultiplierAction {
+  DEPOSIT
+  BORROW
+  HOLD
+}
 enum RiskLevel {
   LOW
   MEDIUM

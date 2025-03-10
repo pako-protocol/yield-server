@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getMarkets = void 0;
+exports.getSiloRewards = exports.getMarkets = void 0;
 const express_async_handler_1 = __importDefault(require("express-async-handler"));
 const prisma_client_1 = __importDefault(require("../prisma-client")); // Adjust the import based on your project structure
 const formatNameQuery_1 = require("../lib/formatNameQuery");
@@ -39,11 +39,17 @@ exports.getMarkets = (0, express_async_handler_1.default)((req, res) => __awaite
     }
     // APR Filtering
     if (query.aprMin || query.aprMax) {
+        filters.baseSilo = filters.baseSilo || {}; // Ensure baseSilo is defined if not already
         if (query.aprMin)
-            filters.apr.gte = Number(query.aprMin);
+            filters.baseSilo.aprDeposit = filters.baseSilo.aprDeposit || {}; // Ensure aprDeposit exists
+        if (query.aprMin)
+            filters.baseSilo.aprDeposit.gte = Number(query.aprMin);
         if (query.aprMax)
-            filters.apr.lte = Number(query.aprMax);
+            filters.baseSilo.aprDeposit = filters.baseSilo.aprDeposit || {}; // Ensure aprDeposit exists
+        if (query.aprMax)
+            filters.baseSilo.aprDeposit.lte = Number(query.aprMax);
     }
+    console.log("filters", JSON.stringify(filters, null, 2));
     // Liquidation Threshold Filters
     if (query.liquidationThresholdMin || query.liquidationThresholdMax) {
         filters.liquidationThreshold = {};
@@ -59,14 +65,6 @@ exports.getMarkets = (0, express_async_handler_1.default)((req, res) => __awaite
             filters.tvl.gte = Number(query.tvlMin);
         if (query.tvlMax)
             filters.tvl.lte = Number(query.tvlMax);
-    }
-    // Utilization Filters
-    if (query.utilizationMin || query.utilizationMax) {
-        filters.utilization = {};
-        if (query.utilizationMin)
-            filters.utilization.gte = Number(query.utilizationMin);
-        if (query.utilizationMax)
-            filters.utilization.lte = Number(query.utilizationMax);
     }
     // Sorting Logic
     const orderBy = {};
@@ -90,7 +88,25 @@ exports.getMarkets = (0, express_async_handler_1.default)((req, res) => __awaite
                         aprBorrow: true,
                         availableToBorrow: true,
                         utilization: true,
-                        tvl: true
+                        tvl: true,
+                        token: {
+                            select: {
+                                name: true,
+                                logo: true,
+                                symbol: true,
+                                tokenAddress: true
+                            }
+                        },
+                        siloRewards: {
+                            select: {
+                                xpPerDollarBorrow: true,
+                                xpPerDollarDeposit: true,
+                                sTokenRewardAPR: true,
+                                siloRewardAPR: true,
+                                sonicXpMultiplier: true,
+                                sonicXpMultiplierAction: true
+                            }
+                        }
                     }
                 },
                 bridgeSilo: {
@@ -101,7 +117,25 @@ exports.getMarkets = (0, express_async_handler_1.default)((req, res) => __awaite
                         aprBorrow: true,
                         availableToBorrow: true,
                         utilization: true,
-                        tvl: true
+                        tvl: true,
+                        token: {
+                            select: {
+                                name: true,
+                                logo: true,
+                                symbol: true,
+                                tokenAddress: true
+                            }
+                        },
+                        siloRewards: {
+                            select: {
+                                xpPerDollarBorrow: true,
+                                xpPerDollarDeposit: true,
+                                sTokenRewardAPR: true,
+                                siloRewardAPR: true,
+                                sonicXpMultiplier: true,
+                                sonicXpMultiplierAction: true
+                            }
+                        }
                     }
                 },
                 platform: {
@@ -128,5 +162,33 @@ exports.getMarkets = (0, express_async_handler_1.default)((req, res) => __awaite
     }
     catch (error) {
         res.status(400).json({ error: error });
+    }
+}));
+exports.getSiloRewards = (0, express_async_handler_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { siloId } = req.query;
+        // Validate query params
+        if (!siloId) {
+            res.status(400).json({ message: "siloId is required" });
+        }
+        // Fetch rewards for the given silo
+        const items = yield prisma_client_1.default.silo.findUnique({
+            where: { siloAddress: siloId },
+            select: {
+                name: true,
+                aprBorrow: true,
+                aprDeposit: true,
+                siloRewards: true
+            }
+        });
+        // Handle not found case
+        if (!items) {
+            res.status(404).json({ message: "Silo not found" });
+        }
+        res.status(200).json({ data: { items } });
+    }
+    catch (error) {
+        console.error("Error fetching silo rewards:", error);
+        res.status(500).json({ message: "Internal Server Error" });
     }
 }));

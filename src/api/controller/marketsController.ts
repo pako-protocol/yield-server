@@ -2,6 +2,7 @@ import expressAsyncHandler from 'express-async-handler';
 import prisma from '../prisma-client'; // Adjust the import based on your project structure
 import { formatPlatformName } from '../lib/formatNameQuery';
 
+
 interface MarketQueryParams {
   marketId?: string;
   marketName?: string;
@@ -16,11 +17,21 @@ interface MarketQueryParams {
   tvlMax?: string;
   utilizationMin?: string;
   utilizationMax?: string;
+    sonicXpMultiplierMin?: string;
+    sonicXpMultiplierMax?: string;
+    sonicXpBaseMultiplierMin?: string;
+    sonicXpBaseMultiplierMax?: string;
+    siloRewardAPRMin?: string;
+    siloRewardAPRMax?: string;
+    sTokenRewardAPRMin?: string;
+    sTokenRewardAPRMax?: string;
   sortBy?: string; // e.g., apr, tvl
   orderBy?: string; // e.g., asc, desc
   page?: string;
   limit?: string;
 }
+
+
 
 export const getMarkets = expressAsyncHandler(async (req, res) => {
   const query = req.query as MarketQueryParams;
@@ -48,12 +59,19 @@ export const getMarkets = expressAsyncHandler(async (req, res) => {
     const formattedPlatformName = formatPlatformName(query.platformName);
     filters.platform = { name: { contains: formattedPlatformName, mode: 'insensitive' } };
   }
-  // APR Filtering
-  if (query.aprMin || query.aprMax) {
-    if (query.aprMin) filters.apr.gte = Number(query.aprMin);
-    if (query.aprMax) filters.apr.lte = Number(query.aprMax);
-  }
+// APR Filtering
+if (query.aprMin || query.aprMax) {
+  filters.baseSilo = filters.baseSilo || {};  // Ensure baseSilo is defined if not already
 
+  if (query.aprMin) filters.baseSilo.aprDeposit = filters.baseSilo.aprDeposit || {};  // Ensure aprDeposit exists
+  if (query.aprMin) filters.baseSilo.aprDeposit.gte = Number(query.aprMin);
+
+  if (query.aprMax) filters.baseSilo.aprDeposit = filters.baseSilo.aprDeposit || {};  // Ensure aprDeposit exists
+  if (query.aprMax) filters.baseSilo.aprDeposit.lte = Number(query.aprMax);
+}
+
+
+console.log("filters", JSON.stringify(filters, null, 2))
   // Liquidation Threshold Filters
   if (query.liquidationThresholdMin || query.liquidationThresholdMax) {
     filters.liquidationThreshold = {};
@@ -68,12 +86,6 @@ export const getMarkets = expressAsyncHandler(async (req, res) => {
     if (query.tvlMax) filters.tvl.lte = Number(query.tvlMax);
   }
 
-  // Utilization Filters
-  if (query.utilizationMin || query.utilizationMax) {
-    filters.utilization = {};
-    if (query.utilizationMin) filters.utilization.gte = Number(query.utilizationMin);
-    if (query.utilizationMax) filters.utilization.lte = Number(query.utilizationMax);
-  }
 
   // Sorting Logic
   const orderBy: any = {};
@@ -91,7 +103,7 @@ export const getMarkets = expressAsyncHandler(async (req, res) => {
     const items = await prisma.market.findMany({
       where: filters,
       include : {
-        baseSilo : {
+      baseSilo : {
 select : {
   name : true,
   siloAddress : true,
@@ -99,9 +111,27 @@ select : {
   aprBorrow : true,
   availableToBorrow : true,
   utilization : true,
-  tvl : true
+  tvl : true,
+  token : {
+    select : { 
+      name : true,
+      logo : true,
+      symbol : true,
+      tokenAddress : true
+    }
+  },
+  siloRewards : {
+     select : {
+      xpPerDollarBorrow : true,
+      xpPerDollarDeposit : true,
+      sTokenRewardAPR : true,
+      siloRewardAPR : true,
+      sonicXpMultiplier : true,
+      sonicXpMultiplierAction : true
+     }
+  }
 }
-        },
+},
         bridgeSilo : {
           select : {
             name : true,
@@ -110,9 +140,27 @@ select : {
             aprBorrow : true,
             availableToBorrow : true,
             utilization : true,
-            tvl : true
+            tvl : true,
+            token : {
+              select : {
+                name : true,
+                logo : true,
+                symbol : true,
+                tokenAddress : true
+              }
+            },
+            siloRewards : {
+              select : {
+               xpPerDollarBorrow : true,
+               xpPerDollarDeposit : true,
+               sTokenRewardAPR : true,
+               siloRewardAPR : true,
+               sonicXpMultiplier : true,
+               sonicXpMultiplierAction : true
+              }
+           }
           }
-                  },
+          },
         platform : {
           select : {
             name : true
@@ -126,6 +174,7 @@ select : {
 
     // Count total items for pagination
     const totalMarkets = await prisma.market.count({ where: filters });
+   
 
     res.status(200).json({
       data: {items},
@@ -140,3 +189,43 @@ select : {
     res.status(400).json({ error: error });
   }
 });
+
+interface SiloRewards {
+   siloId? : string
+}
+
+export const getSiloRewards  = expressAsyncHandler( async (req, res) => {
+  try {
+    const { siloId } = req.query as { siloId?: string };
+
+    // Validate query params
+    if (!siloId) {
+       res.status(400).json({ message: "siloId is required" });
+    }
+
+    // Fetch rewards for the given silo
+    const items = await prisma.silo.findUnique({
+      where: { siloAddress: siloId },
+      select: {
+        name: true,
+        aprBorrow : true,
+        aprDeposit : true,
+        siloRewards: true
+      }
+    });
+
+    // Handle not found case
+    if (!items) {
+     res.status(404).json({ message: "Silo not found" });
+    }
+
+    res.status(200).json({ data : {items} });
+  } catch (error) {
+    console.error("Error fetching silo rewards:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
+
+
+

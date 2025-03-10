@@ -6,5 +6,5 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const vaultsController_1 = require("../controller/vaultsController");
 const router = express_1.default.Router();
-router.route("/vaults").get(vaultsController_1.getSilos);
+router.route("/get-vaults").get(vaultsController_1.getVaults);
 exports.default = router;
